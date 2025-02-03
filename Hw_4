@@ -1,0 +1,80 @@
+# hw sql 4
+1 - 
+CREATE TABLE courses (
+	course_id	INTEGER,
+	topic	TEXT NOT NULL,
+	hours	INTEGER NOT NULL,
+	PRIMARY KEY(course_id AUTOINCREMENT)
+);
+
+CREATE TABLE students (
+	student_id	INTEGER,
+	name	TEXT NOT NULL,
+	emai	TEXT NOT NULL UNIQUE,
+	PRIMARY KEY(student_id AUTOINCREMENT)
+);
+
+CREATE TABLE grades (
+	student_id	INTEGER,
+	course_id	INTEGER,
+	grade	INTEGER ,
+	PRIMARY KEY(course_id,student_id),
+	FOREIGN KEY(student_id) REFERENCES students(student_id)
+	FOREIGN KEY(course_id) REFERENCES courses(course_id)
+);
+
+2-
+INSERT INTO students (name, emai) VALUES 
+('lior' , 'lior@gmail'),
+('mor' , 'mor@gmail')
+
+INSERT INTO courses (topic, hours) VALUES 
+('phisics' , 5),
+('bio' , 4)
+
+INSERT INTO grades (student_id,course_id,grade) VALUES
+(1,1,80),
+(1,2,85),
+(2,1,80),
+(2,2,90)
+
+3-
+SELECT course_id,avg(grade) from grades
+GROUP by course_id
+
+#
+SELECT students.name,courses.topic, grades.grade from students
+inner JOIN grades
+on students.student_id = grades.student_id
+INNER JOIN courses on grades.course_id = courses.course_id
+#
+4- ##from python##
+import sqlite3
+
+def read_table(cursor,query):
+    """show the output of query"""
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    result = [dict(row) for row in rows]
+    return result
+
+
+def connect_sql(db_name):
+    """Connect to SQL"""
+    conn = sqlite3.connect(db_name)  # creates a connector
+    conn.row_factory = sqlite3.Row  # allow me to use column name
+    cursor = conn.cursor()  # creates a cursor
+    return conn,cursor
+
+def update_table(cursor,conn,query,parameter):
+    cursor.execute(query,parameter)
+    conn.commit()
+
+conn , cursor = connect_sql('courses_grade.db')
+
+# 4
+print(read_table(cursor,"select * from courses"))
+
+# 5
+update_table(cursor,conn,"""insert into courses (topic,hours)
+ values (?,?)""",(input("Enter topic course"),input("Enter number of hours in week")))
